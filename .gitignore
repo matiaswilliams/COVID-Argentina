@@ -4,3 +4,4 @@ desktop.ini
 *checkpoint.ipynb
 .ipynb_checkpoints
 .DS_Store
+/notebooks/colombia/*.csv

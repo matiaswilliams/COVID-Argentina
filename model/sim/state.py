@@ -162,13 +162,14 @@ def simulate_step(states, location_df, tests_df, t, N_c, contacts_df, n_print=10
     return states, tests_df
 
 
-def simulate_states(sim, N_infected=15):
+def simulate_states(sim, N_infected=15, infected=None):
     with tasklogger.log_task("states"):
         N0 = len(sim["patients"]["patient"])
         T = len(sim["dates"]["date"])
         states = np.zeros((N0, T))
         tests_df = empty_tests()
-        infected = np.random.choice(sim["patients"]["patient"], N_infected)
+        if infected is None:
+            infected = np.random.choice(sim["patients"]["patient"], N_infected)
         states[infected, 0] = if_else(infected, constants.alpha, 2, 3)
         for t in range(T - 1):
             states, tests_df = simulate_step(
