@@ -117,18 +117,37 @@ def test_random(states, tests_df, t):
     return test_exposed(states, t, tested_idx)
 
 
-def simulate_step(states, location_df, tests_df, t, N_c, contacts_df, n_print=10):
+def simulate_step(states, location_df, tests_df, t, N_c, contacts_df=None, mnz2ids={}, id2mnz={}, patient_ids=None, n_print=10):
     # exposures
     infectious = np.concatenate(
         [patients_in_state(states, t, state) for state in model.INFECTIOUS_STATES]
     )
-    contacts_df = contacts_df.loc[contacts_df["date"] == t]
-    exposed_idx = np.concatenate(
-        [
-            contacts_df.loc[np.isin(contacts_df["patient1"], infectious)]["patient2"],
-            contacts_df.loc[np.isin(contacts_df["patient2"], infectious)]["patient1"],
-        ]
-    )
+#     print("infectious", len(infectious), infectious.shape, infectious.min(), infectious.max())
+#     print("id2mnz", len(id2mnz), min(id2mnz.keys()), max(id2mnz.keys()))
+    if contacts_df is not None :
+        contacts_df = contacts_df.loc[contacts_df["date"] == t]
+        exposed_idx = np.concatenate(
+            [
+                contacts_df.loc[np.isin(contacts_df["patient1"], infectious)]["patient2"],
+                contacts_df.loc[np.isin(contacts_df["patient2"], infectious)]["patient1"],
+            ]
+        )
+    else:
+        for inf in infectious:
+            # inf is not an ID, but an index matching back to the states matrix.
+            # We need to fetch back the ID used in id2mnz:
+            inf_id = patient_ids.iloc[inf]
+            
+            if isinstance(id2mnz[inf_id], list):
+                exposed_idx=[]
+                for mnz_id in id2mnz[inf_id]:
+                    exposed_idx.append(mnz2ids[mnz_id])
+                exposed_idx = np.concatenate(exposed_idx)    
+                
+            else:
+                exposed_idx = mnz2ids[id2mnz[inf]]
+        
+
     if t % max(1, states.shape[1] // n_print) == 0:
         print(
             "t = {}; {} infectious; {} exposed; {} susceptible; {} dead".format(
@@ -168,13 +187,30 @@ def simulate_states(sim, N_infected=15, infected=None):
         T = len(sim["dates"]["date"])
         states = np.zeros((N0, T))
         tests_df = empty_tests()
+        
+#         print(len(states))
+#         print(max(infected))
+        
         if infected is None:
             infected = np.random.choice(sim["patients"]["patient"], N_infected)
-        states[infected, 0] = if_else(infected, constants.alpha, 2, 3)
+            states[infected, 0] = if_else(infected, constants.alpha, 2, 3)
+        else:
+            inters = np.in1d(sim["patients"]["patient"],infected)
+#             print(inters.sum())
+            states[inters, 0] = 4
+            
         for t in range(T - 1):
             states, tests_df = simulate_step(
-                states, sim["location"], tests_df, t, sim["N_c"], sim["contacts"]
-            )
+                states, 
+                sim["location"], 
+                tests_df, 
+                t, 
+                sim["N_c"], 
+                None, #sim["contacts"], 
+                sim["mnz2ids"] if "mnz2ids" in sim.keys() else {}, 
+                sim["id2mnz"] if "id2mnz" in sim.keys() else {},
+                sim["patients"]["patient"]
+                )
         return states, tests_df
 
 

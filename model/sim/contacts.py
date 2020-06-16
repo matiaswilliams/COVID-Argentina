@@ -33,3 +33,15 @@ def calculate_Nc(sim):
         * 2
         / (sim["patients"].shape[0] * sim["dates"].shape[0])
     )
+
+def calculate_Nc_for_mnz_approximation(sim):
+    contacts=0
+    for p in sim["patients"]["patient"]:
+        if isinstance(sim["id2mnz"][p], list):
+            for mnz_id in sim["id2mnz"][p]:
+                contacts += len(sim["mnz2ids"][mnz_id])
+        else:
+            contacts += len(sim["mnz2ids"][sim["id2mnz"][p]])
+        
+    return contacts/len(sim["patients"])
+    
