@@ -23,6 +23,9 @@ def if_else(idx, p, a, b):
 def patients_in_state(states, t, state):
     return np.argwhere(states[:, t] == state).flatten()
 
+# Adding a new function that can search based on age
+def patients_in_age_state(states, t, state, age1, age2):
+    return np.argwhere((states[:, t] == state) & (states[:, age] >= age1) & (states[:, age] <= age2)).flatten()
 
 def expose(states, t, idx, N_c):
     idx = np.intersect1d(idx, patients_in_state(states, t, 0))
@@ -49,6 +52,39 @@ def await_presymptomatic(states, t):
     idx = patients_in_state(states, t, 3)
     states[idx, t + 1] = if_else(
         idx, constants.lambda_p, if_else(idx, constants.mu, 4, 5), 3
+    )
+    return states
+
+# Alternative function that takes age
+def await_presymptomatic_age (states, t):
+    idx = patients_in_age_state(states, t, 3, 0, 19)
+    states[idx, t + 1] = if_else(
+        idx, constants.lambda_p, if_else(idx, constants.mu_0_19, 4, 5), 3
+    )
+    
+    idx = patients_in_age_state(states, t, 3, 20, 44)
+    states[idx, t + 1] = if_else(
+        idx, constants.lambda_p, if_else(idx, constants.mu_20_44, 4, 5), 3
+    )
+    
+    idx = patients_in_age_state(states, t, 3, 45, 54)
+    states[idx, t + 1] = if_else(
+        idx, constants.lambda_p, if_else(idx, constants.mu_45_54, 4, 5), 3
+    )
+    
+    idx = patients_in_age_state(states, t, 3, 55, 64)
+    states[idx, t + 1] = if_else(
+        idx, constants.lambda_p, if_else(idx, constants.mu_55_64, 4, 5), 3
+    )
+    
+    idx = patients_in_age_state(states, t, 3, 75, 84)
+    states[idx, t + 1] = if_else(
+        idx, constants.lambda_p, if_else(idx, constants.mu_75_84, 4, 5), 3
+    )
+    
+    idx = patients_in_age_state(states, t, 3, 85, 120)
+    states[idx, t + 1] = if_else(
+        idx, constants.lambda_p, if_else(idx, constants.mu_85_above, 4, 5), 3
     )
     return states
 
