@@ -55,7 +55,7 @@ def await_presymptomatic(states, t):
     )
     return states
 
-# Alternative function that takes age
+# Alternative await_presymptomatic function that takes age
 def await_presymptomatic_age (states, t):
     idx = patients_in_age_state(states, t, 3, 0, 19)
     states[idx, t + 1] = if_else(
@@ -108,6 +108,45 @@ def await_hospital(states, t):
     )
     return states
 
+
+# Alternative await_hospital function that takes age
+def await_hospital_age(states, t):
+    idx = patients_in_age_state(states, t, 6, 0, 19)
+    states[idx, t + 1] = if_else(
+        idx, constants.rho, if_else(idx, constants.delta_0_19, 8, 7), 6
+    )
+    
+    idx = patients_in_age_state(states, t, 6, 20, 44)
+    states[idx, t + 1] = if_else(
+        idx, constants.rho, if_else(idx, constants.delta_20_44, 8, 7), 6
+    )
+    
+    idx = patients_in_age_state(states, t, 6, 45, 54)
+    states[idx, t + 1] = if_else(
+        idx, constants.rho, if_else(idx, constants.delta_45_54, 8, 7), 6
+    )
+    
+    idx = patients_in_age_state(states, t, 6, 55, 64)
+    states[idx, t + 1] = if_else(
+        idx, constants.rho, if_else(idx, constants.delta_55_64, 8, 7), 6
+    )
+    
+    idx = patients_in_age_state(states, t, 6, 65, 74)
+    states[idx, t + 1] = if_else(
+        idx, constants.rho, if_else(idx, constants.delta_65_74, 8, 7), 6
+    )
+
+    idx = patients_in_age_state(states, t, 6, 75, 84)
+    states[idx, t + 1] = if_else(
+        idx, constants.rho, if_else(idx, constants.delta_75_84, 8, 7), 6
+    )
+    
+    idx = patients_in_age_state(states, t, 6, 85, 120)
+    states[idx, t + 1] = if_else(
+        idx, constants.rho, if_else(idx, constants.delta_85_above, 8, 7), 6
+    )
+    
+    return states
 
 def sustain_recovered(states, t):
     idx = patients_in_state(states, t, 7)
